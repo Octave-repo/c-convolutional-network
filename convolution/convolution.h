@@ -5,4 +5,3 @@ int conv1d(Matrice *in_feature_map, Matrice *kernel,
 
 int conv2d(Matrice *in_feature_map, Matrice *kernel,
  unsigned short stride, unsigned short padding, Matrice *in_feature_ma);
- 
