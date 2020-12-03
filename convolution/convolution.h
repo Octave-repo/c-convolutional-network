@@ -1,4 +1,8 @@
 #include "../matrice.h"
 
-int conv1d(Matrice1d *in_feature_map, );
-int conv2d();
+int conv1d(Matrice *in_feature_map, Matrice *kernel,
+ unsigned short stride, unsigned short padding, Matrice *in_feature_ma);
+
+int conv2d(Matrice *in_feature_map, Matrice *kernel,
+ unsigned short stride, unsigned short padding, Matrice *in_feature_ma);
+ 
