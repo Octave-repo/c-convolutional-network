@@ -1,5 +1,6 @@
 typedef struct Matrice
 {
-    int *matrice;
+    double **matrice;
     int size;
+    int dim;
 } Matrice;
