@@ -5,8 +5,8 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#define MAX 10
-#define MIN 0
+#define MAX 100
+#define MIN -100
 
 
 int matrixSize(char* str){
@@ -388,11 +388,24 @@ int main(int argc, char *argv[]){
     Matrice mapIn = loadMatrix("map32.txt");
     Matrice mapOut;
     Matrice kernel = loadMatrix("kernel3.txt");
-    conv2d(mapIn, kernel, 3, 0, &mapOut);
+    conv2d(mapIn, kernel, 1, 0, &mapOut);
     mapIn = mapOut;
     relu(&mapIn, &mapOut);
     mapIn = mapOut;
-    maxPool(mapIn, kernel.size,3,0,&mapOut);
+    maxPool(mapIn, kernel.size,3,2,&mapOut);
     writeMatrix("out.txt", mapOut);
+
+
+    mapIn = loadMatrix("map32.txt");
+    kernel = loadMatrix("kernel3.txt");
+    conv2d(mapIn, kernel, 1, 0, &mapOut);
+    mapIn = mapOut;
+    writeMatrix("out3.txt", mapOut);
+    sigmoid(&mapIn, &mapOut);
+    mapIn = mapOut;
+    averagePool(mapIn, kernel.size,3,0,&mapOut);
+    writeMatrix("out2.txt", mapOut);
+
+
     return 0;
 }
