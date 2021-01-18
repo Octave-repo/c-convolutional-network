@@ -66,9 +66,9 @@ int conv2d(Matrice in_feature_map, Matrice kernel,
             int centre_j = 1-padding + j + (j ? stride - 1 : 0);
             double somme = 0;
             //Boucle imbriqué tel que le millieu des lignes et colones soient 0
-            for (int ii = -half_kern_size ; ii <= half_kern_size ; ii++)
+            for (int ii = -half_kern_size ; ii <= half_kern_size-(1-kernel.size%2) ; ii++)
             {
-                for (int jj = -half_kern_size ; jj <= half_kern_size ; jj++)
+                for (int jj = -half_kern_size ; jj <= half_kern_size-(1-kernel.size%2) ; jj++)
                 {
                     if (jj+centre_j >= 0 && jj+centre_j < in_feature_map.size && ii+centre_i >= 0 && ii+centre_i < in_feature_map.size)
                     {
