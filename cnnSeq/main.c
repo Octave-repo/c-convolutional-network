@@ -462,10 +462,6 @@ int main(int argc, char *argv[])
     int map[3] = {32, 64, 128};
     int kernel[3] = {3, 7, 9};
 
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    writeTiming("BEGIN", start.tv_nsec);
-
     for (int i_map = 0; i_map < 3; i_map++)
     {
         for (int i_kernel = 0; i_kernel < 3; i_kernel++)
@@ -474,42 +470,35 @@ int main(int argc, char *argv[])
             {
                 for (int padding = 0; padding <= 1; padding++)
                 {
-                    printf("preparing info\n");
                     char *str_info = malloc(sizeof(char) * 32);
                     sprintf(str_info, format, map[i_map], kernel[i_kernel], stride, padding);
                     printf(str_info);
-                    printf("\n");
 
-                    printf("map\n");
                     char *str_map = malloc(sizeof(char) * 16);
                     sprintf(str_map, "map%d.txt", map[i_map]);
                     Matrice mapIn = loadMatrix(str_map);
-                    printf("map OK\n");
 
                     Matrice mapOut;
 
-                    printf("ker\n");
                     char *str_kernel = malloc(sizeof(char) * 16);
                     sprintf(str_kernel, "kernel%d.txt", kernel[i_kernel]);
                     Matrice kernel = loadMatrix(str_kernel);
-                    printf("ker OK\n");
 
-                    struct timespec stop;
+                    struct timespec start,stop;
 
                     clock_gettime(CLOCK_MONOTONIC, &start);
 
-                    printf("run\n");
                     conv2d(mapIn, kernel, stride, padding, &mapOut);
                     mapIn = mapOut;
                     relu(&mapIn, &mapOut);
                     mapIn = mapOut;
                     maxPool(mapIn, kernel.size, stride, padding, &mapOut);
-                    printf("run OK\n");
 
                     clock_gettime(CLOCK_MONOTONIC, &stop);
 
+                    long delta = stop.tv_nsec - start.tv_nsec + (stop.tv_sec - start.tv_sec)*1000000000;
+
                     writeTiming(str_info, stop.tv_nsec);
-                    writeMatrix("out.txt", mapOut);
                 }
             }
         }
