@@ -329,34 +329,61 @@ double f_relu(double x){
     return x;
 }
 
+//Applique la fonction f_sigmoid à la matrice in_feature_map et met le résultat dans out_feature_map
 int sigmoid(Matrice *in_feature_map, Matrice *out_feature_map){
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
-    for(int i=0; i<dim; i++){
-        for (int j=0; j<size;j++){
-            out_feature_map->matrice[i][j] = f_sigmoid(in_feature_map->matrice[i][j]);
+    //Dimension 2
+    if(dim>1){
+        for(int i=0; i<size; i++){
+            for (int j=0; j<size;j++){
+                out_feature_map->matrice[i][j] = f_sigmoid(in_feature_map->matrice[i][j]);
+            }
+        }
+    //Dimension 1
+    }else{
+        for(int i=0; i<size; i++){
+            out_feature_map->matrice[0][i] = f_sigmoid(in_feature_map->matrice[0][i]);
         }
     }
     return 0;
 }
 
+//Applique la fonction f_tanh à la matrice in_feature_map et met le résultat dans out_feature_map
 int tanh_(Matrice *in_feature_map, Matrice *out_feature_map){
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
-    for(int i=0; i<dim; i++){
-        for (int j=0; j<size;j++){
-            out_feature_map->matrice[i][j] = f_tanh(in_feature_map->matrice[i][j]);
+    //Dimension 2
+    if(dim>1){
+        for(int i=0; i<size; i++){
+            for (int j=0; j<size;j++){
+                out_feature_map->matrice[i][j] = f_tanh(in_feature_map->matrice[i][j]);
+            }
+        }
+    //Dimension 1
+    }else{
+        for(int i=0; i<size; i++){
+            out_feature_map->matrice[0][i] = f_tanh(in_feature_map->matrice[0][i]);
         }
     }
     return 0;
 }
 
+//Applique la fonction f_relu à la matrice in_feature_map et met le résultat dans out_feature_map
 int relu(Matrice *in_feature_map, Matrice *out_feature_map){
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
-    for(int i=0; i<dim; i++){
-        for (int j=0; j<size;j++){
-            out_feature_map->matrice[i][j] = f_tanh(in_feature_map->matrice[i][j]);
+    //Dimension 2
+    if(dim>1){
+        for(int i=0; i<size; i++){
+            for (int j=0; j<size;j++){
+                out_feature_map->matrice[i][j] = f_relu(in_feature_map->matrice[i][j]);
+            }
+        }
+    //Dimension 1
+    }else{
+        for(int i=0; i<size; i++){
+            out_feature_map->matrice[0][i] = f_relu(in_feature_map->matrice[0][i]);
         }
     }
     return 0;
@@ -366,7 +393,13 @@ int relu(Matrice *in_feature_map, Matrice *out_feature_map){
 //###########################################################
 //###########################################################
 
-
+void writeTiming(char* label, int timestamp){
+    FILE *f = fopen("timing.csv", "w+");
+    fprintf(f, label);
+    fprintf(f, ";%d", timestamp);
+    fprintf(f, "\n");
+    fclose(f);
+}
 
 
 int main(int argc, char *argv[]){
