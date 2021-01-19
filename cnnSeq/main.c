@@ -8,18 +8,20 @@
 #define MAX 100
 #define MIN -100
 
-
-int matrixSize(char* str){
+int matrixSize(char *str)
+{
     int size = 0;
-    char* buf = strtok(str, ";");
-    while(buf!=NULL){
+    char *buf = strtok(str, ";");
+    while (buf != NULL)
+    {
         size++;
         buf = strtok(NULL, ";");
     }
-    return(size);
+    return (size);
 }
 
-Matrice loadMatrix(char* chemin){
+Matrice loadMatrix(char *chemin)
+{
     Matrice m;
     char buffer[255];
     FILE *f = fopen(chemin, "r+");
@@ -27,53 +29,60 @@ Matrice loadMatrix(char* chemin){
     fclose(f);
     m.dim = 2;
     m.size = matrixSize(buffer);
-    m.matrice = malloc(m.size*sizeof(double*));
+    m.matrice = malloc(m.size * sizeof(double *));
 
-    for(int i = 0; i<m.size; i++)
-        m.matrice[i]= malloc(m.size*sizeof(double));
+    for (int i = 0; i < m.size; i++)
+        m.matrice[i] = malloc(m.size * sizeof(double));
 
     f = fopen(chemin, "r+");
     fgets(buffer, 255, f);
 
-    for(int i = 0; i < m.size; i++){
-        char* buf = strtok(buffer, ";");
-        for(int j = 0; j < m.size; j++){
+    for (int i = 0; i < m.size; i++)
+    {
+        char *buf = strtok(buffer, ";");
+        for (int j = 0; j < m.size; j++)
+        {
             m.matrice[i][j] = strtod(buf, NULL);
             buf = strtok(NULL, ";");
         }
         fgets(buffer, 255, f);
     }
     fclose(f);
-    return(m);
+    return (m);
 }
 
-void writeMatrix(char* chemin, Matrice input){
+void writeMatrix(char *chemin, Matrice input)
+{
     FILE *f = fopen(chemin, "w+");
-    for(int i = 0; i < input.size; i++){
-        for(int j = 0; j < input.size; j++){
+    for (int i = 0; i < input.size; i++)
+    {
+        for (int j = 0; j < input.size; j++)
+        {
             fprintf(f, "%.3f", input.matrice[i][j]);
-            if(j != input.size-1)
+            if (j != input.size - 1)
                 fprintf(f, ";");
         }
-        if(i != input.size-1)
+        if (i != input.size - 1)
             fprintf(f, "\n");
     }
     fclose(f);
 }
 
-Matrice randomMatrix(unsigned int size){
+Matrice randomMatrix(unsigned int size)
+{
     Matrice m;
     m.size = size;
     m.dim = 2;
 
+    m.matrice = malloc(m.size * sizeof(double *));
 
-    m.matrice = malloc(m.size*sizeof(double*));
+    for (int i = 0; i < m.size; i++)
+        m.matrice[i] = malloc(m.size * sizeof(double));
 
-    for(int i = 0; i<m.size; i++)
-        m.matrice[i]= malloc(m.size*sizeof(double));
-
-    for(int i = 0; i < m.size; i++){
-        for(int j = 0; j < m.size; j++){
+    for (int i = 0; i < m.size; i++)
+    {
+        for (int j = 0; j < m.size; j++)
+        {
             m.matrice[i][j] = (double)(rand() % (MAX - MIN + 1)) + MIN;
         }
     }
@@ -86,7 +95,7 @@ Matrice randomMatrix(unsigned int size){
 //###########################################################
 
 int conv1d(Matrice in_feature_map, Matrice kernel,
- unsigned short stride, unsigned short padding, Matrice *out_feature_map)
+           unsigned short stride, unsigned short padding, Matrice *out_feature_map)
 {
     int new_size;
     int tempint;
@@ -100,18 +109,19 @@ int conv1d(Matrice in_feature_map, Matrice kernel,
     out_feature_map->dim = 1;
     out_feature_map->size = new_size;
     //On initialise la matrice
-    out_feature_map->matrice = malloc(sizeof(double*));
+    out_feature_map->matrice = malloc(sizeof(double *));
     out_feature_map->matrice[0] = malloc(sizeof(double) * new_size);
 
     pos = 0;
     //On parcours la matrice d'entr�e
-    for (int i = 1-padding ; i <= new_size ; i += stride){
+    for (int i = 1 - padding; i <= new_size; i += stride)
+    {
         double somme = 0;
         //Pour chaque �l�ments parcourus on fait les produits
-        for (int j = 0 ; j < kernel.size ; j++)
+        for (int j = 0; j < kernel.size; j++)
         {
-            int half_size = (int) kernel.size/2;
-            int x = i + (stride * j-1);
+            int half_size = (int)kernel.size / 2;
+            int x = i + (stride * j - 1);
             //Fait la somme en prennant en compte le padding
             somme += (x >= 0 && x < in_feature_map.size) ? kernel.matrice[0][j] * in_feature_map.matrice[0][x] : 0;
         }
@@ -121,40 +131,40 @@ int conv1d(Matrice in_feature_map, Matrice kernel,
 }
 
 int conv2d(Matrice in_feature_map, Matrice kernel,
- unsigned short stride, unsigned short padding, Matrice *out_feature_map)
+           unsigned short stride, unsigned short padding, Matrice *out_feature_map)
 {
-  int new_size;
-  int tempint;
-  int pos;
-  int half_kern_size;
+    int new_size;
+    int tempint;
+    int pos;
+    int half_kern_size;
 
-  half_kern_size = kernel.size/2;
-  //On calcule la taille de la nouvelle matrice
-  tempint = in_feature_map.size - 2 + 2 * padding;
-  new_size = (tempint / stride)+(tempint%stride?1:0);
+    half_kern_size = kernel.size / 2;
+    //On calcule la taille de la nouvelle matrice
+    tempint = in_feature_map.size - 2 + 2 * padding;
+    new_size = (tempint / stride) + (tempint % stride ? 1 : 0);
 
     //On initialise les donn�es de la matrice
     out_feature_map->dim = 2;
     out_feature_map->size = new_size;
     //On initialise la matrice
-    out_feature_map->matrice = malloc(sizeof(double*) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    out_feature_map->matrice = malloc(sizeof(double *) * new_size);
+    for (int i = 0; i < new_size; i++)
         out_feature_map->matrice[i] = malloc(sizeof(double) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    for (int i = 0; i < new_size; i++)
     {
-        for (int j = 0 ; j < new_size ; j++)
+        for (int j = 0; j < new_size; j++)
         {
-            int centre_i = 1-padding + i + (i ? stride - 1 : 0);
-            int centre_j = 1-padding + j + (j ? stride - 1 : 0);
+            int centre_i = 1 - padding + i + (i ? stride - 1 : 0);
+            int centre_j = 1 - padding + j + (j ? stride - 1 : 0);
             double somme = 0;
             //Boucle imbriqu� tel que le millieu des lignes et colones soient 0
-            for (int ii = -half_kern_size ; ii <= half_kern_size ; ii++)
+            for (int ii = -half_kern_size; ii <= half_kern_size; ii++)
             {
-                for (int jj = -half_kern_size ; jj <= half_kern_size ; jj++)
+                for (int jj = -half_kern_size; jj <= half_kern_size; jj++)
                 {
-                    if (jj+centre_j >= 0 && jj+centre_j < in_feature_map.size && ii+centre_i >= 0 && ii+centre_i < in_feature_map.size)
+                    if (jj + centre_j >= 0 && jj + centre_j < in_feature_map.size && ii + centre_i >= 0 && ii + centre_i < in_feature_map.size)
                     {
-                        somme += in_feature_map.matrice[ii+centre_i][jj+centre_j] * kernel.matrice[ii+half_kern_size][jj+half_kern_size];
+                        somme += in_feature_map.matrice[ii + centre_i][jj + centre_j] * kernel.matrice[ii + half_kern_size][jj + half_kern_size];
                     }
                 }
             }
@@ -172,41 +182,43 @@ int conv2d(Matrice in_feature_map, Matrice kernel,
 //#####################POOLING###############################
 //###########################################################
 int maxPool(Matrice in_feature_map, unsigned short kernel,
- unsigned short stride, unsigned short padding, Matrice *out_feature_map){
+            unsigned short stride, unsigned short padding, Matrice *out_feature_map)
+{
     int new_size;
     int tempint;
     int pos;
     int half_kern_size;
 
-    half_kern_size = kernel/2;
+    half_kern_size = kernel / 2;
     //On calcule la taille de la nouvelle matrice
     tempint = in_feature_map.size - 2 + 2 * padding;
-    new_size = (tempint / stride)+(tempint%stride?1:0);
+    new_size = (tempint / stride) + (tempint % stride ? 1 : 0);
 
     //On initialise les donn�es de la matrice
     out_feature_map->dim = 2;
     out_feature_map->size = new_size;
     printf("%d\n", new_size);
     //On initialise la matrice
-    out_feature_map->matrice = malloc(sizeof(double*) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    out_feature_map->matrice = malloc(sizeof(double *) * new_size);
+    for (int i = 0; i < new_size; i++)
         out_feature_map->matrice[i] = malloc(sizeof(double) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    for (int i = 0; i < new_size; i++)
     {
-        for (int j = 0 ; j < new_size ; j++)
+        for (int j = 0; j < new_size; j++)
         {
-            int centre_i = 1-padding + i + (i ? stride - 1 : 0);
-            int centre_j = 1-padding + j + (j ? stride - 1 : 0);
+            int centre_i = 1 - padding + i + (i ? stride - 1 : 0);
+            int centre_j = 1 - padding + j + (j ? stride - 1 : 0);
             double max = -DBL_MAX;
             //Boucle imbriqu� tel que le millieu des lignes et colones soient 0
-            for (int ii = -half_kern_size ; ii <= half_kern_size-(1-kernel%2) ; ii++)
+            for (int ii = -half_kern_size; ii <= half_kern_size - (1 - kernel % 2); ii++)
             {
-                for (int jj = -half_kern_size ; jj <= half_kern_size-(1-kernel%2) ; jj++)
+                for (int jj = -half_kern_size; jj <= half_kern_size - (1 - kernel % 2); jj++)
                 {
-                    if (jj+centre_j >= 0 && jj+centre_j < in_feature_map.size && ii+centre_i >= 0 && ii+centre_i < in_feature_map.size)
+                    if (jj + centre_j >= 0 && jj + centre_j < in_feature_map.size && ii + centre_i >= 0 && ii + centre_i < in_feature_map.size)
                     {
-                        if(max < in_feature_map.matrice[ii+centre_i][jj+centre_j]){
-                            max = in_feature_map.matrice[ii+centre_i][jj+centre_j];
+                        if (max < in_feature_map.matrice[ii + centre_i][jj + centre_j])
+                        {
+                            max = in_feature_map.matrice[ii + centre_i][jj + centre_j];
                         }
                     }
                 }
@@ -215,44 +227,45 @@ int maxPool(Matrice in_feature_map, unsigned short kernel,
         }
     }
     return 1;
-
 }
 
 int minPool(Matrice in_feature_map, unsigned short kernel,
- unsigned short stride, unsigned short padding, Matrice *out_feature_map){
-   int new_size;
-   int tempint;
-   int pos;
-   int half_kern_size;
+            unsigned short stride, unsigned short padding, Matrice *out_feature_map)
+{
+    int new_size;
+    int tempint;
+    int pos;
+    int half_kern_size;
 
-   half_kern_size = kernel/2;
-   //On calcule la taille de la nouvelle matrice
-   tempint = in_feature_map.size - 2 + 2 * padding;
-   new_size = (tempint / stride)+(tempint%stride?1:0);
+    half_kern_size = kernel / 2;
+    //On calcule la taille de la nouvelle matrice
+    tempint = in_feature_map.size - 2 + 2 * padding;
+    new_size = (tempint / stride) + (tempint % stride ? 1 : 0);
 
     //On initialise les donn�es de la matrice
     out_feature_map->dim = 2;
     out_feature_map->size = new_size;
     //On initialise la matrice
-    out_feature_map->matrice = malloc(sizeof(double*) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    out_feature_map->matrice = malloc(sizeof(double *) * new_size);
+    for (int i = 0; i < new_size; i++)
         out_feature_map->matrice[i] = malloc(sizeof(double) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    for (int i = 0; i < new_size; i++)
     {
-        for (int j = 0 ; j < new_size ; j++)
+        for (int j = 0; j < new_size; j++)
         {
-            int centre_i = 1-padding + i + (i ? stride - 1 : 0);
-            int centre_j = 1-padding + j + (j ? stride - 1 : 0);
+            int centre_i = 1 - padding + i + (i ? stride - 1 : 0);
+            int centre_j = 1 - padding + j + (j ? stride - 1 : 0);
             double min = DBL_MAX;
             //Boucle imbriqu� tel que le millieu des lignes et colones soient 0
-            for (int ii = -half_kern_size ; ii <= half_kern_size-(1-kernel%2) ; ii++)
+            for (int ii = -half_kern_size; ii <= half_kern_size - (1 - kernel % 2); ii++)
             {
-                for (int jj = -half_kern_size ; jj <= half_kern_size-(1-kernel%2) ; jj++)
+                for (int jj = -half_kern_size; jj <= half_kern_size - (1 - kernel % 2); jj++)
                 {
-                    if (jj+centre_j >= 0 && jj+centre_j < in_feature_map.size && ii+centre_i >= 0 && ii+centre_i < in_feature_map.size)
+                    if (jj + centre_j >= 0 && jj + centre_j < in_feature_map.size && ii + centre_i >= 0 && ii + centre_i < in_feature_map.size)
                     {
-                        if(min > in_feature_map.matrice[ii+centre_i][jj+centre_j]){
-                            min = in_feature_map.matrice[ii+centre_i][jj+centre_j];
+                        if (min > in_feature_map.matrice[ii + centre_i][jj + centre_j])
+                        {
+                            min = in_feature_map.matrice[ii + centre_i][jj + centre_j];
                         }
                     }
                 }
@@ -261,47 +274,47 @@ int minPool(Matrice in_feature_map, unsigned short kernel,
         }
     }
     return 1;
-
 }
 
 int averagePool(Matrice in_feature_map, unsigned short kernel,
- unsigned short stride, unsigned short padding, Matrice *out_feature_map){
-   int new_size;
-   int tempint;
-   int pos;
-   int half_kern_size;
+                unsigned short stride, unsigned short padding, Matrice *out_feature_map)
+{
+    int new_size;
+    int tempint;
+    int pos;
+    int half_kern_size;
 
-   half_kern_size = kernel/2;
-   //On calcule la taille de la nouvelle matrice
-   tempint = in_feature_map.size - 2 + 2 * padding;
-   new_size = (tempint / stride)+(tempint%stride?1:0);
+    half_kern_size = kernel / 2;
+    //On calcule la taille de la nouvelle matrice
+    tempint = in_feature_map.size - 2 + 2 * padding;
+    new_size = (tempint / stride) + (tempint % stride ? 1 : 0);
 
     //On initialise les donn�es de la matrice
     out_feature_map->dim = 2;
     out_feature_map->size = new_size;
     //On initialise la matrice
-    out_feature_map->matrice = malloc(sizeof(double*) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    out_feature_map->matrice = malloc(sizeof(double *) * new_size);
+    for (int i = 0; i < new_size; i++)
         out_feature_map->matrice[i] = malloc(sizeof(double) * new_size);
-    for (int i = 0 ; i < new_size ; i++)
+    for (int i = 0; i < new_size; i++)
     {
-        for (int j = 0 ; j < new_size ; j++)
+        for (int j = 0; j < new_size; j++)
         {
-            int centre_i = 1-padding + i + (i ? stride - 1 : 0);
-            int centre_j = 1-padding + j + (j ? stride - 1 : 0);
+            int centre_i = 1 - padding + i + (i ? stride - 1 : 0);
+            int centre_j = 1 - padding + j + (j ? stride - 1 : 0);
             double somme = 0;
             //Boucle imbriqu� tel que le millieu des lignes et colones soient 0
-            for (int ii = -half_kern_size ; ii <= half_kern_size-(1-kernel%2) ; ii++)
+            for (int ii = -half_kern_size; ii <= half_kern_size - (1 - kernel % 2); ii++)
             {
-                for (int jj = -half_kern_size ; jj <= half_kern_size-(1-kernel%2) ; jj++)
+                for (int jj = -half_kern_size; jj <= half_kern_size - (1 - kernel % 2); jj++)
                 {
-                    if (jj+centre_j >= 0 && jj+centre_j < in_feature_map.size && ii+centre_i >= 0 && ii+centre_i < in_feature_map.size)
+                    if (jj + centre_j >= 0 && jj + centre_j < in_feature_map.size && ii + centre_i >= 0 && ii + centre_i < in_feature_map.size)
                     {
-                        somme += in_feature_map.matrice[ii+centre_i][jj+centre_j];
+                        somme += in_feature_map.matrice[ii + centre_i][jj + centre_j];
                     }
                 }
             }
-            double avg = somme/(kernel*kernel);
+            double avg = somme / (kernel * kernel);
             out_feature_map->matrice[i][j] = avg;
         }
     }
@@ -316,33 +329,44 @@ int averagePool(Matrice in_feature_map, unsigned short kernel,
 //#####################ACTIVATION############################
 //###########################################################
 
-double f_sigmoid(double x){
-    return 1/(1+exp(-x));
+double f_sigmoid(double x)
+{
+    return 1 / (1 + exp(-x));
 }
 
-double f_tanh(double x){
-    return (exp(x)-exp(-x))/(exp(x)+exp(-x));
+double f_tanh(double x)
+{
+    return (exp(x) - exp(-x)) / (exp(x) + exp(-x));
 }
 
-double f_relu(double x){
-    if (x<0) return 0;
+double f_relu(double x)
+{
+    if (x < 0)
+        return 0;
     return x;
 }
 
 //Applique la fonction f_sigmoid à la matrice in_feature_map et met le résultat dans out_feature_map
-int sigmoid(Matrice *in_feature_map, Matrice *out_feature_map){
+int sigmoid(Matrice *in_feature_map, Matrice *out_feature_map)
+{
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
     //Dimension 2
-    if(dim>1){
-        for(int i=0; i<size; i++){
-            for (int j=0; j<size;j++){
+    if (dim > 1)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
                 out_feature_map->matrice[i][j] = f_sigmoid(in_feature_map->matrice[i][j]);
             }
         }
-    //Dimension 1
-    }else{
-        for(int i=0; i<size; i++){
+        //Dimension 1
+    }
+    else
+    {
+        for (int i = 0; i < size; i++)
+        {
             out_feature_map->matrice[0][i] = f_sigmoid(in_feature_map->matrice[0][i]);
         }
     }
@@ -350,19 +374,26 @@ int sigmoid(Matrice *in_feature_map, Matrice *out_feature_map){
 }
 
 //Applique la fonction f_tanh à la matrice in_feature_map et met le résultat dans out_feature_map
-int tanh_(Matrice *in_feature_map, Matrice *out_feature_map){
+int tanh_(Matrice *in_feature_map, Matrice *out_feature_map)
+{
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
     //Dimension 2
-    if(dim>1){
-        for(int i=0; i<size; i++){
-            for (int j=0; j<size;j++){
+    if (dim > 1)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
                 out_feature_map->matrice[i][j] = f_tanh(in_feature_map->matrice[i][j]);
             }
         }
-    //Dimension 1
-    }else{
-        for(int i=0; i<size; i++){
+        //Dimension 1
+    }
+    else
+    {
+        for (int i = 0; i < size; i++)
+        {
             out_feature_map->matrice[0][i] = f_tanh(in_feature_map->matrice[0][i]);
         }
     }
@@ -370,19 +401,26 @@ int tanh_(Matrice *in_feature_map, Matrice *out_feature_map){
 }
 
 //Applique la fonction f_relu à la matrice in_feature_map et met le résultat dans out_feature_map
-int relu(Matrice *in_feature_map, Matrice *out_feature_map){
+int relu(Matrice *in_feature_map, Matrice *out_feature_map)
+{
     int size = in_feature_map->size;
     int dim = in_feature_map->dim;
     //Dimension 2
-    if(dim>1){
-        for(int i=0; i<size; i++){
-            for (int j=0; j<size;j++){
+    if (dim > 1)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
                 out_feature_map->matrice[i][j] = f_relu(in_feature_map->matrice[i][j]);
             }
         }
-    //Dimension 1
-    }else{
-        for(int i=0; i<size; i++){
+        //Dimension 1
+    }
+    else
+    {
+        for (int i = 0; i < size; i++)
+        {
             out_feature_map->matrice[0][i] = f_relu(in_feature_map->matrice[0][i]);
         }
     }
@@ -393,16 +431,17 @@ int relu(Matrice *in_feature_map, Matrice *out_feature_map){
 //###########################################################
 //###########################################################
 
-void writeTiming(char* label, int timestamp){
-    FILE *f = fopen("timing.csv", "w+");
+void writeTiming(char *label, long duration)
+{
+    FILE *f = fopen("timing.csv", "a+");
     fprintf(f, label);
-    fprintf(f, ";%d", timestamp);
+    fprintf(f, ";%ld", duration / 1000000);
     fprintf(f, "\n");
     fclose(f);
 }
 
-
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
 
     srand(time(NULL));
 
@@ -418,27 +457,63 @@ int main(int argc, char *argv[]){
         return 0;
     }
     */
-    Matrice mapIn = loadMatrix("map32.txt");
-    Matrice mapOut;
-    Matrice kernel = loadMatrix("kernel3.txt");
-    conv2d(mapIn, kernel, 1, 0, &mapOut);
-    mapIn = mapOut;
-    relu(&mapIn, &mapOut);
-    mapIn = mapOut;
-    maxPool(mapIn, kernel.size,3,2,&mapOut);
-    writeMatrix("out.txt", mapOut);
+    char *format = "%d-%d-%d-%d";
 
+    int map[3] = {32, 64, 128};
+    int kernel[3] = {3, 7, 9};
 
-    mapIn = loadMatrix("map32.txt");
-    kernel = loadMatrix("kernel3.txt");
-    conv2d(mapIn, kernel, 1, 0, &mapOut);
-    mapIn = mapOut;
-    writeMatrix("out3.txt", mapOut);
-    sigmoid(&mapIn, &mapOut);
-    mapIn = mapOut;
-    averagePool(mapIn, kernel.size,3,0,&mapOut);
-    writeMatrix("out2.txt", mapOut);
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    writeTiming("BEGIN", start.tv_nsec);
 
+    for (int i_map = 0; i_map < 3; i_map++)
+    {
+        for (int i_kernel = 0; i_kernel < 3; i_kernel++)
+        {
+            for (int stride = 1; stride <= 3; stride++)
+            {
+                for (int padding = 0; padding <= 1; padding++)
+                {
+                    printf("preparing info\n");
+                    char *str_info = malloc(sizeof(char) * 32);
+                    sprintf(str_info, format, map[i_map], kernel[i_kernel], stride, padding);
+                    printf(str_info);
+                    printf("\n");
+
+                    printf("map\n");
+                    char *str_map = malloc(sizeof(char) * 16);
+                    sprintf(str_map, "map%d.txt", map[i_map]);
+                    Matrice mapIn = loadMatrix(str_map);
+                    printf("map OK\n");
+
+                    Matrice mapOut;
+
+                    printf("ker\n");
+                    char *str_kernel = malloc(sizeof(char) * 16);
+                    sprintf(str_kernel, "kernel%d.txt", kernel[i_kernel]);
+                    Matrice kernel = loadMatrix(str_kernel);
+                    printf("ker OK\n");
+
+                    struct timespec stop;
+
+                    clock_gettime(CLOCK_MONOTONIC, &start);
+
+                    printf("run\n");
+                    conv2d(mapIn, kernel, stride, padding, &mapOut);
+                    mapIn = mapOut;
+                    relu(&mapIn, &mapOut);
+                    mapIn = mapOut;
+                    maxPool(mapIn, kernel.size, stride, padding, &mapOut);
+                    printf("run OK\n");
+
+                    clock_gettime(CLOCK_MONOTONIC, &stop);
+
+                    writeTiming(str_info, stop.tv_nsec);
+                    writeMatrix("out.txt", mapOut);
+                }
+            }
+        }
+    }
 
     return 0;
 }
